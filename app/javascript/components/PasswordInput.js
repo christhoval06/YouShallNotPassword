@@ -4,13 +4,16 @@ import green from '@material-ui/core/colors/green';
 import TextField from '@material-ui/core/TextField';
 import Button from "@material-ui/core/Button";
 import CircularProgress from '@material-ui/core/CircularProgress';
+import Typography from "@material-ui/core/Typography";
 
 
 const styles = theme => ({
     root: {
+        display: 'flex',
         width: '100%',
         height: '100%',
         flex: 1,
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -23,9 +26,10 @@ const styles = theme => ({
         width: '100%',
     },
     container: {
-        flex: 1,
+        display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
+        width: '100%',
     },
     button: {
         backgroundColor: green[500],
@@ -45,6 +49,18 @@ const styles = theme => ({
         marginTop: -12,
         marginLeft: -12,
     },
+    title: {
+        fontSize: '6.75em',
+        lineHeight: '.4444444444em',
+        paddingTop: '.4444444444em',
+    },
+    strength: {
+        display: 'flex',
+        height: 400,
+        alignItems: 'center',
+        justifyContent: 'center',
+
+    }
 });
 
 
@@ -52,13 +68,16 @@ const API_URL = '/api/v1/you_shall_not_passwords/validate_password';
 
 class PasswordInput extends React.Component {
 
-    state = {password: '', loading: false};
+    state = {password: '', loading: false, data: null};
 
     handleChange = name => event => {
-        this.setState({[name]: event.target.value});
+        this.setState({[name]: event.target.value, data: null});
     };
 
     onValidateClick = () => {
+        if (this.state.password.length === 0)
+            return;
+
         this.setState({loading: true}, () => {
             fetch(API_URL, {
                 method: "POST",
@@ -68,8 +87,7 @@ class PasswordInput extends React.Component {
                 body: JSON.stringify({'password': this.state.password})
             }).then(response => response.json())
                 .then(data => {
-                    console.log('data', data);
-                    this.setState({loading: false});
+                    this.setState({loading: false, 'data': data.data});
                 })
                 .catch(error => {
                     console.error(error);
@@ -79,7 +97,7 @@ class PasswordInput extends React.Component {
     };
 
     render() {
-        const {password, loading} = this.state;
+        const {password, loading, data} = this.state;
         const {classes} = this.props;
 
         return (
@@ -112,6 +130,20 @@ class PasswordInput extends React.Component {
                     </div>
 
                 </div>
+
+                {data && (
+                    <div className={classes.strength}>
+                        <div>
+                            <Typography variant="h1" color="inherit" className={classes.title}>
+                                {data.strength}
+                            </Typography>
+                            <Typography variant="h3" gutterBottom color="inherit"
+                                        style={{flex: 1}}/>
+                            <Typography variant="h3" color="inherit"
+                                        style={{flex: 1}}>score: {data.score}, password: {data.password}</Typography>
+                        </div>
+                    </div>
+                )}
 
             </React.Fragment>
         );
